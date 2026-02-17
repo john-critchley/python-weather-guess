@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Node / Angular
+node_modules/
+dist/
+coverage/
+
+# Logs
+*.log
+*.out
+
+# OS junk in case you open it on another OS
+.DS_Store
+Thumbs.db
