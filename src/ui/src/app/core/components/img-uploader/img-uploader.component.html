@@ -1,0 +1,45 @@
+<div class="container center">
+  <div class="row">
+    <div class="col-md-12">
+      <h1 class="white">File Upload</h1>
+    </div>
+  </div>
+
+  <form [formGroup]="form" name="upload" method="post" action="#" enctype="multipart/form-data" accept-charset="utf-8">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3 center">
+        <div class="btn-container">
+					<h1 class="imgupload">
+
+						<!--jc show preview when image selected -->
+						<img
+							*ngIf="imagePreview"
+							[src]="imagePreview"
+							style="max-width: 150px; max-height: 150px;"
+						/>
+
+						<!--jc otherwise show placeholder icon -->
+						<i
+							*ngIf="!imagePreview"
+							class="fa fa-file-image-o"
+						></i>
+
+					</h1>
+
+          <h1 class="imgupload ok"><i class="fa fa-check"></i></h1>
+          <h1 class="imgupload stop"><i class="fa fa-times"></i></h1>
+          <p id="namefile">Only images are allowed!</p>
+          <button type="button" id="btnup" class="btn btn-primary btn-lg">Browse for your image!</button>
+          <input type="file" value="" name="fileup" id="fileup" (change)="onFileChange($event)">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <input type="submit" value="Submit!" class="btn btn-primary" id="submitbtn">
+        <button [disabled]="form.invalid" type="button" class="btn btn-default" id="fakebtn" (click)="uploadFile()">Submit!</button>
+      </div>
+    </div>
+  </form>
+</div>

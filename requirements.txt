@@ -1,0 +1,5 @@
+flask
+boto3
+pyzmq
+confluent_kafka
+psycopg2-binary

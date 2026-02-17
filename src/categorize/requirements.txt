@@ -1,0 +1,5 @@
+tensorflow
+Keras
+Keras-Preprocessing
+numpy
+Pillow

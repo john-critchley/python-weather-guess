@@ -1,0 +1,14 @@
+[storage]
+backend = file
+
+[queue]
+backend = kafka
+config = kafka:29092
+input_channel = requests_topic
+response_channel = response_topic
+
+[categorize]
+app_host = 127.0.0.1
+app_port = 8090
+app_debug = True
+model_path = ../model/vgg19-weather.h5
