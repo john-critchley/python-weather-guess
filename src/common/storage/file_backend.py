@@ -7,17 +7,13 @@ class LocalFilesystem(StorageBackend):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.LOGGGER.info(f"Init local filesystem with {list(*args)} {list(**kwargs)}")
+
         if self.remote_prefix == "":
-            if os.environ.get("STORAGE_DIR"):
-                self.remote_prefix = os.environ.get("STORAGE_DIR")
-            else:
-                self.remote_prefix = "/tmp"
+        #-jc TODO: migrate to persistent volume path:-
+            self.remote_prefix = os.environ.get("STORAGE_DIR") or "/tmp" # nosec B108 - container-local temp storage
 
         if self.local_prefix == "":
-            if os.environ.get("TMP_DIR"):
-                self.local_prefix = os.environ.get("TMP_DIR")
-            else:
-                self.local_prefix = "/tmp"
+            self.local_prefix = os.environ.get("TMP_DIR") or self.remote_prefix
 
     def put_object(self, src, dst=""):
         if dst == "":

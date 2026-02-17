@@ -36,22 +36,38 @@ def scan_topic(dto, channel, table):
             else:
                 event_values.append(f"'{str(event[key])}'")
 
-        sql = f"INSERT INTO {table} ({event_keys}) VALUES ({','.join(event_values)})"
         try:
+            columns = list(event.keys())
+            values = [event[c] for c in columns]
+
+            query = psycopg2.sql.SQL(
+                "INSERT INTO {table} ({fields}) VALUES ({placeholders})"
+            ).format(
+                table=psycopg2.sql.Identifier(table),
+                fields=psycopg2.sql.SQL(", ").join(
+                    map(psycopg2.sql.Identifier, columns)
+                ),
+                placeholders=psycopg2.sql.SQL(", ").join(
+                    psycopg2.sql.Placeholder() for _ in columns
+                ),
+            )
+
             conn = psycopg2.connect(
                 host=DB_DATABASE_HOST,
                 port=DB_DATABASE_PORT,
                 database=DB_DATABASE,
                 user=DB_USERNAME,
-                password=DB_PASSWORD)
-            cur = conn.cursor()
-            cur.execute(sql)
-            conn.commit()
-            conn.close()
-            RESULT_MART[table] += 1
-        except:
-            pass
+                password=DB_PASSWORD,
+            )
 
+            with conn:
+                with conn.cursor() as cur:
+                    cur.execute(query, values)
+
+            RESULT_MART[table] += 1
+
+        except psycopg2.Error as e:
+            LOGGER.exception("Database insert failed")  #-jc
 
 if __name__ == "__main__":
     config = Configuration()

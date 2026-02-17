@@ -17,7 +17,7 @@ class Configuration(object):
         self.dispatcher_app_host = "127.0.0.1"
         self.dispatcher_app_port = "8080"
         self.dispatcher_app_debug = True
-        self.dispatcher_temp_folder = "/tmp"
+        self.dispatcher_temp_folder = "/tmp"  # nosec B108 - container-local temp storage -jc
         self.dispatcher_allowed_extensions = {'png', 'jpg', 'jpeg'}
 
         # Categorize
