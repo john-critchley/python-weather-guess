@@ -19,7 +19,6 @@ app.config.setdefault(
 )
 #-jc module defaults (may be overridden by Configuration)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-UPLOAD_FOLDER = "/tmp"
 STORAGE = None  #-jc import-safe default
 
 def allowed_file(filename):
