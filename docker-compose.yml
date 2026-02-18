@@ -27,6 +27,8 @@ services:
 
   dispatcher:
     image: techtest-dispatcher:dev
+    build:
+      context: ./src/dispatcher
     depends_on:
       - kafka
       - postgres
@@ -37,17 +39,24 @@ services:
 
   categorize:
     image: techtest-categorize:dev
+    build:
+      context: ./src/categorize
+
     depends_on:
       - kafka
 
   reporting:
     image: techtest-reporting:dev
+    build:
+      context: ./src/reporting
     depends_on:
       - postgres
       - kafka
 
   ui:
     image: techtest-ui:dev
+    build:
+      context: ./src/ui
     depends_on:
       - dispatcher
     ports:
