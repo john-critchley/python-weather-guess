@@ -57,8 +57,15 @@
         version: main
         update: yes
 
+    #-jc build images on target host
+    - name: Build docker images
+      ansible.builtin.command:
+        cmd: docker-compose build
+        chdir: /opt/python-weather-guess
+    
     #-jc start stack
     - name: Launch docker compose stack
       ansible.builtin.command:
-        cmd: docker-compose up -d --force-recreate --remove-orphans
+        cmd: docker-compose up -d --remove-orphans
         chdir: /opt/python-weather-guess
+    
