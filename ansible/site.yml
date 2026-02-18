@@ -1,0 +1,61 @@
+---
+- name: Bootstrap and deploy weather guess stack
+  hosts: micro
+  become: false
+  vars:
+    app_dir: /opt/python-weather-guess
+
+  tasks:
+
+    #-jc ensure apt cache fresh
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    #-jc install docker prerequisites
+    - name: Install base packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    #-jc install docker
+    - name: Install docker
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+
+    #-jc ensure docker running
+    - name: Enable and start docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    #-jc ensure app directory exists
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    #-jc clone repo
+    - name: Checkout application repo
+      git:
+        repo: https://github.com/john-critchley/python-weather-guess.git
+        dest: "{{ app_dir }}"
+        version: main
+        update: yes
+
+    #-jc start stack
+    - name: Launch docker compose stack
+      command: docker-compose up -d
+      args:
+        chdir: "{{ app_dir }}"
+
