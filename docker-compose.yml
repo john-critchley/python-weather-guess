@@ -28,7 +28,8 @@ services:
   dispatcher:
     image: techtest-dispatcher:dev
     build:
-      context: ./src/dispatcher
+      context: .
+      dockerfile: src/dispatcher/Dockerfile
     depends_on:
       - kafka
       - postgres
@@ -40,7 +41,8 @@ services:
   categorize:
     image: techtest-categorize:dev
     build:
-      context: ./src/categorize
+      context: .
+      dockerfile: src/categorize/Dockerfile
 
     depends_on:
       - kafka
@@ -48,7 +50,8 @@ services:
   reporting:
     image: techtest-reporting:dev
     build:
-      context: ./src/reporting
+      context: .
+      dockerfile: src/reporting/Dockerfile
     depends_on:
       - postgres
       - kafka
@@ -56,7 +59,8 @@ services:
   ui:
     image: techtest-ui:dev
     build:
-      context: ./src/ui
+      context: .
+      dockerfile: src/ui/Dockerfile
     depends_on:
       - dispatcher
     ports:
