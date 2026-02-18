@@ -22,7 +22,7 @@ export class FileUploadService {
   public uploadFile(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<any>('http://localhost:8080/categorize', formData);
+    return this.http.post<any>('/categorize', formData);
     // return of('123');
   }
 
@@ -40,7 +40,7 @@ export class FileUploadService {
   }
 
   public getFileDataById(id: string): Observable<any> {
-    return this.http.get<any>(`http://localhost:8080/categorize/${ id }`);
+    return this.http.get<any>(`/categorize/${ id }`);
     // this.counter++;
     // return this.counter < 3  ? of(IN_PROGRESS) : of('cat');
   }
