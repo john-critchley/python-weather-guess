@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="620" viewBox="0 0 1600 620">
+
+  <defs>
+    <style>
+      .box { fill:#ffffff; stroke:#111; stroke-width:2; rx:12; ry:12; }
+      .title { font:700 18px sans-serif; fill:#111; }
+      .small { font:13px sans-serif; fill:#333; }
+      .arrow { stroke:#111; stroke-width:2.5; fill:none; marker-end:url(#arrow); }
+      .dashed { stroke-dasharray:6 6; }
+    </style>
+
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#111"/>
+    </marker>
+  </defs>
+
+  <!-- Box widths reduced ~7%:
+       220 -> 205, 260 -> 242, 200 -> 186
+       Increased gap between Browser and UI nginx by shifting everything (except Browser) right. -->
+
+  <!-- TOP ROW -->
+
+  <!-- Browser -->
+  <rect class="box" x="80" y="90" width="205" height="90"/>
+  <text class="title" x="105" y="130">Browser</text>
+  <text class="small" x="105" y="155">Angular UI</text>
+
+  <!-- UI nginx -->
+  <rect class="box" x="435" y="90" width="205" height="90"/>
+  <text class="title" x="460" y="130">UI nginx</text>
+  <text class="small" x="460" y="155">SPA + proxy</text>
+
+  <!-- Dispatcher -->
+  <rect class="box" x="730" y="80" width="242" height="110"/>
+  <text class="title" x="755" y="120">Dispatcher</text>
+  <text class="small" x="755" y="145">Flask API</text>
+
+  <!-- Kafka -->
+  <rect class="box" x="1062" y="80" width="242" height="110"/>
+  <text class="title" x="1087" y="120">Kafka</text>
+  <text class="small" x="1087" y="145">request / response topics</text>
+
+  <!-- Categorize -->
+  <rect class="box" x="1394" y="80" width="186" height="110"/>
+  <text class="title" x="1419" y="120">Categorize</text>
+  <text class="small" x="1419" y="145">TensorFlow</text>
+
+  <!-- SECOND ROW -->
+
+  <!-- Shared Storage -->
+  <rect class="box" x="730" y="300" width="242" height="90"/>
+  <text class="title" x="755" y="335">Shared Storage</text>
+  <text class="small" x="755" y="360">image volume</text>
+
+  <!-- Reporting -->
+  <rect class="box" x="435" y="300" width="205" height="100"/>
+  <text class="title" x="460" y="335">Reporting</text>
+  <text class="small" x="460" y="360">activity writer</text>
+
+  <!-- Postgres -->
+  <rect class="box" x="435" y="470" width="205" height="90"/>
+  <text class="title" x="480" y="520">Postgres</text>
+
+  <!-- ===================== -->
+  <!-- MAIN FLOW -->
+  <!-- ===================== -->
+
+  <!-- Browser -> nginx -->
+  <path class="arrow" d="M285 135 L435 135"/>
+  <text class="small" x="295" y="120">POST /categorize</text>
+
+  <!-- nginx -> dispatcher -->
+  <path class="arrow" d="M640 135 L730 135"/>
+
+  <!-- dispatcher -> kafka -->
+  <path class="arrow" d="M972 135 L1062 135"/>
+  <text class="small" x="982" y="118">
+    <tspan x="982" dy="0">publish</tspan>
+    <tspan x="982" dy="16">request</tspan>
+  </text>
+
+  <!-- kafka -> categorize -->
+  <path class="arrow" d="M1304 135 L1394 135"/>
+  <text class="small" x="1314" y="118">
+    <tspan x="1314" dy="0">consume</tspan>
+    <tspan x="1314" dy="16">request</tspan>
+  </text>
+
+  <!-- categorize -> kafka -->
+  <path class="arrow" d="M1394 165 L1304 165"/>
+  <text class="small" x="1314" y="185">
+    <tspan x="1314" dy="0">publish</tspan>
+    <tspan x="1314" dy="16">response</tspan>
+  </text>
+
+  <!-- kafka -> dispatcher -->
+  <path class="arrow" d="M1062 165 L972 165"/>
+  <text class="small" x="982" y="185">
+    <tspan x="982" dy="0">consume</tspan>
+    <tspan x="982" dy="16">response</tspan>
+  </text>
+
+  <!-- ===================== -->
+  <!-- POLLING (arrowhead aligned) -->
+  <!-- ===================== -->
+
+  <!-- dashed curve (no marker) -->
+  <path class="dashed"
+        d="M190 90 C190 40, 851 40, 851 60"
+        stroke="#111" stroke-width="2.5" fill="none"/>
+
+  <!-- dashed vertical stub INTO dispatcher top edge (marker aligns perfectly) -->
+  <path class="arrow dashed"
+        d="M851 60 L851 80"/>
+
+  <!-- moved up ~70% of its height -->
+  <text class="small" x="520" y="41">GET /categorize/{id}</text>
+
+  <!-- ===================== -->
+  <!-- STORAGE -->
+  <!-- ===================== -->
+
+  <!-- Dispatcher writes image -->
+  <path class="arrow" d="M851 190 L851 300"/>
+  <text class="small" x="861" y="250">write image</text>
+
+  <!-- Categorize reads image -->
+  <path class="arrow" d="M1487 190 L851 300"/>
+  <text class="small" x="1190" y="280">read image</text>
+
+  <!-- ===================== -->
+  <!-- REPORTING -->
+  <!-- ===================== -->
+
+  <!-- Dispatcher emits activity -->
+  <path class="arrow" d="M730 160 L640 330"/>
+  <text class="small" x="650" y="240">emit activity</text>
+
+  <!-- Reporting inserts -->
+  <path class="arrow" d="M537 400 L537 470"/>
+  <text class="small" x="547" y="440">insert</text>
+
+</svg>

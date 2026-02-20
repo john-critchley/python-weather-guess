@@ -1,60 +1,183 @@
-# Fabula
+# Weather Guess Platform
 
-You work for a software engineering company and develop custom software for clients. One of the clients requested a proof of concept (PoC) for a web application that allows users to upload pictures and receive weather-related results (e.g., rainy, foggy, sunny). The client received a demo of this project, but it was postponed due to budget constraints. Additionally, the original developer of the PoC left the company, and no one is familiar with how it functions.
+Cloud-native microservice application that classifies uploaded images by weather conditions (e.g. sunny, foggy, rainy) using a deep learning model.
 
-The client now wishes to continue the project as soon as possible, and you are assigned to lead it. Currently, you are the only person responsible for CI/CD and systems architecture on the project.
+The platform demonstrates a production-oriented SDLC including containerisation, automated deployment, CI checks, and infrastructure automation.
 
-## Technical considerations
- 
-- The client aims to create a cloud-native solution. Although they haven’t decided on a specific cloud provider, they expect all required environments, CI/CD pipelines, and databases to be hosted with one of the top cloud vendors.
-- The client has several SCM tools in place: GitHub, GitLab, Bitbucket, Azure DevOps, and Forgejo (self-hosted). You can use any of these to demonstrate the benefits of integrated CI/CD, with the flexibility to migrate to the client's preferred SCM in the future.
+---
 
-## Expectations
+## Overview
 
-- You will need to create a systems design with supporting diagrams and documentation.
-- There is a scheduled meeting with the client’s team, which includes project managers, architects, and a technical lead.
-  * They expect to see a production-grade SDLC with a fully implemented CI/CD pipeline.
-  * They are looking forward to a quick product demo, so the application should be deployed to a production-like environment.
-  * The client has recently started adopting IaC and hopes to run a pilot using best practices during this project.
-  * Expect technical questions and discussions regarding the solution details and technical implementation.
-  * Be prepared for live coding, as they may request you to implement a new feature on the spot.
-- The client’s architect has conducted an independent analysis and proposed a high-level solution. This includes a container orchestration system, IaC, fully automated SDLC (including SAST and DAST), and an enterprise-grade database.
-- Our consulting team is available to assist if needed (a Teams chat will be created soon after you receive this assignment).
+The system allows a user to:
 
-## Hints and Tips from consultancy team:
-- Free accounts on public SCM platforms and free-tier cloud providers are sufficient for this assignment.
-- You have approximately 7 days to complete this task.
-- "Talk is cheap. Show me the code." © Linus Torvalds. By day 5, you should provide access to the repository(ies) and, if available, to the deployed application for review by the assessment committee.
-- The task can be completed in approximately 20 hours, so plan your time accordingly.
-- Certain parts can be stubbed or skipped to save time. For example, you may skip unit test implementation in your CI pipeline and instead create a placeholder step that always returns success.
-- Code can be broken. Verify that the application works as expected (if it possible), and address any issues that arise.
-- Use GenAI or other AI tools to streamline your work, but don’t overlook your own expertise.
-- You always have space to improvements. If you identify any minor additions that could significantly improve the quality of the solution, feel free to implement it.
+1. Upload an image via the web UI  
+2. Submit the image for classification  
+3. Receive a predicted weather label  
+4. Persist activity for reporting  
 
+The architecture is fully containerised and designed for cloud deployment.
 
-----
-# Project description
-![Image](docs/conceptual.png)
+---
 
-# Project Structure
+## Architecture
 
-## Categorize
-VGG-19 network and application code to perform inference
+Components:
 
-## Common
-Storage, config and queue code
+- UI — Angular application served by nginx  
+- Dispatcher — Flask API handling uploads and orchestration  
+- Categorize — TensorFlow inference service (VGG-19)  
+- Reporting — Postgres writer service  
+- Kafka + Zookeeper — async messaging backbone  
+- Postgres — activity storage  
 
-## Dispatcher
-Backend to get pictures and handle user response
+### High-level request and classification flow:
+![Request / response flow](docs/flow.svg)
 
-## Docs
-Documentation-related images and files
+Key characteristics:
 
-## Reporting
-Collection and visualization of user activity
+- asynchronous request pipeline  
+- stateless services  
+- container-first design  
+- Ansible-driven host provisioning  
+- AWS-compatible but cloud-agnostic  
 
-## UI
-User interface files
+---
 
-# Concepts
-This project was intentionally created the way it was created
+## Repository Structure
+
+Categorize  
+: TensorFlow inference service
+
+Common  
+: shared storage, config and queue helpers
+
+Dispatcher  
+: Flask backend for upload and workflow
+
+Reporting  
+: user activity persistence
+
+UI  
+: Angular frontend
+
+Docs  
+: diagrams and supporting material
+
+---
+
+## Prerequisites
+
+Local development:
+
+- Docker  
+- Docker Compose (plugin or standalone)  
+- Node.js (only if rebuilding UI locally)  
+- Python 3.10+  
+
+Deployment automation:
+
+- Ansible  
+- AWS credentials (for EC2 provisioning)  
+
+---
+
+## Quick Start (Local)
+
+From repository root:
+
+```bash
+docker compose up -d --build
+```
+
+Then open:
+
+```
+http://localhost:8088
+```
+
+Upload an image and verify a weather label is returned.
+
+---
+
+## Deployment (Automated)
+
+Provision and deploy to a host:
+
+```bash
+ansible-playbook -i inventory.yml site.yml --limit <host>
+```
+
+The playbook will:
+
+- configure the host  
+- build container images  
+- start the full stack  
+- expose the UI  
+
+---
+
+## Configuration
+
+Key environment variables:
+
+STORAGE_DIR  
+: image working directory (defaults to /tmp)
+
+CONFIG_FILE  
+: dispatcher configuration path
+
+Kafka and Postgres settings are defined in docker-compose.yml and service configs.
+
+---
+
+## CI Pipeline
+
+Current pipeline includes:
+
+- Bandit security scan  
+- npm audit  
+- pytest execution  
+
+The pipeline is intentionally lightweight but structured for extension.
+
+---
+
+## Known Limitations / Future Improvements
+
+- Temporary storage currently uses `/tmp`  
+- Model artefact stored in repository  
+- Healthchecks not yet implemented  
+- Frontend dependency vulnerabilities pending cleanup  
+- HAProxy front layer optional for scale  
+
+---
+
+## Development Notes
+
+When modifying the system:
+
+- Preserve relative API paths in the Angular app  
+- Ensure nginx proxy rules remain before SPA fallback  
+- Kafka consumers must wait for partition assignment  
+- Dispatcher and Categorize must share the same image volume  
+- Build context for Docker images must remain project root  
+
+Failure to maintain these invariants may break end-to-end flow.
+
+---
+
+## Roadmap
+
+Near-term hardening:
+
+- persistent shared storage  
+- service healthchecks  
+- external model download  
+- improved Kafka readiness  
+
+---
+
+## License
+
+Internal proof-of-concept project.
+
