@@ -7,6 +7,7 @@ from common.event.response_dto import Response
 from common.config.config import Configuration
 import threading
 import psycopg2
+import psycopg2.sql
 import logging
 
 

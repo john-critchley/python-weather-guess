@@ -22,6 +22,7 @@ services:
       POSTGRES_DB: weather
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./env/infra/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
 
   dispatcher:
     image: techtest-dispatcher:dev
@@ -35,19 +36,21 @@ services:
       - "8080:8080"
     environment:
       CONFIG_FILE: /app/src/dispatcher/config/default.ini
+      STORAGE_DIR: /data/images
     volumes:
-      - shared-tmp:/tmp
+      - image_data:/data/images
 
   categorize:
     image: techtest-categorize:dev
     build:
       context: .
       dockerfile: src/categorize/Dockerfile
-
     depends_on:
       - kafka
+    environment:
+      STORAGE_DIR: /data/images
     volumes:
-      - shared-tmp:/tmp
+      - image_data:/data/images
 
   reporting:
     image: techtest-reporting:dev
@@ -70,4 +73,4 @@ services:
 
 volumes:
   postgres_data:
-  shared-tmp:
+  image_data:
