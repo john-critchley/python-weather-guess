@@ -6,13 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install extra Python deps
-COPY src/categorize/requirements.txt /tmp/categorize-req.txt
-RUN pip install --no-cache-dir -r /tmp/categorize-req.txt
-
-# Install shared deps
+# shared deps
 COPY requirements.txt /tmp/root-req.txt
-RUN pip install --no-cache-dir -r /tmp/root-req.txt
+# extra Python deps
+COPY src/categorize/requirements.txt /tmp/categorize-req.txt
+# Combine + install
+RUN cat /tmp/root-req.txt /tmp/categorize-req.txt > /tmp/all-req.txt \
+    && pip install --no-cache-dir -r /tmp/all-req.txt
 
 # Copy full source tree
 COPY src /app/src
@@ -31,4 +31,3 @@ WORKDIR /app
 EXPOSE 8081
 
 CMD ["python", "src/categorize/runtime/app.py"]
-

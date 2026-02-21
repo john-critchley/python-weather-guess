@@ -1,5 +1,6 @@
-flask
-boto3
-pyzmq
-confluent_kafka
-psycopg2-binary
+flask==3.0.3
+boto3==1.37.38
+pyzmq==27.1.0
+confluent-kafka==2.13.0
+psycopg2-binary==2.9.10
+

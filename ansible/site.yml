@@ -1,7 +1,9 @@
 ---
 - name: Bootstrap and deploy weather guess stack
   hosts: critchley
-  become: false
+  become: true
+  become_method: sudo
+  become_user: root
   vars:
     app_dir: /opt/python-weather-guess
 

@@ -1,5 +1,5 @@
-tensorflow
-Keras
-Keras-Preprocessing
-numpy
-Pillow
+tensorflow==2.13.1
+Keras==2.13.1
+Keras-Preprocessing==1.1.2
+numpy==1.24.3
+Pillow==10.4.0

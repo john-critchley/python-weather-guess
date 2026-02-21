@@ -21,8 +21,32 @@ RESULT_MART = {
 
 @app.route("/stats", methods=["GET"])
 def get_request_stats():
-    global RESULT_MART
-    return str(RESULT_MART)
+    try:
+        conn = psycopg2.connect(
+            host=DB_DATABASE_HOST,
+            port=DB_DATABASE_PORT,
+            database=DB_DATABASE,
+            user=DB_USERNAME,
+            password=DB_PASSWORD,
+        )
+
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(f"SELECT COUNT(*) FROM {DB_REQ_TABLE}")
+                req_count = cur.fetchone()[0]
+
+                cur.execute(f"SELECT COUNT(*) FROM {DB_RESP_TABLE}")
+                resp_count = cur.fetchone()[0]
+
+        return {
+            "status": "ok",
+            "requests": req_count,
+            "responses": resp_count,
+        }
+
+    except Exception:
+        LOGGER.exception("Stats query failed")  #-jc
+        return {"status": "error"}, 500
 
 
 def scan_topic(dto, channel, table):
