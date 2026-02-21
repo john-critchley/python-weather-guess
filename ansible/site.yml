@@ -1,4 +1,66 @@
 ---
+- name: Provision EC2 host (control plane)
+  hosts: critchley
+  gather_facts: false
+  connection: local
+  vars:
+    aws_scripts_dir: "/home/john/aws"
+
+  tasks:
+    #-jc launch instance (idempotent-ish)
+    - name: Launch EC2 instance
+      command: >
+        {{ aws_scripts_dir }}/awslaunch.py
+        {{ inventory_hostname }}
+        {{ instance_type }}
+      register: launch_result
+      changed_when: "'Changed: true' in launch_result.stdout"
+
+    #-jc extract instance id + public IP from script output
+    - name: Extract instance id
+      set_fact:
+        new_instance_id: "{{ (launch_result.stdout | regex_findall('Instance:\\s*(i-[0-9a-f]+)'))[0] }}"
+    
+    - name: Extract public IP
+      set_fact:
+        new_public_ip: "{{ (launch_result.stdout | regex_findall('Public IP:\\s*([0-9.]+)'))[0] }}"
+    
+    #-jc update local /etc/hosts (include instance id for aws_open_port.py)
+    - name: Update local hosts file
+      become: true
+      delegate_to: localhost
+      lineinfile:
+        path: /etc/hosts
+        regexp: "\\s{{ inventory_hostname }}\\b"
+        line: "{{ new_public_ip }} {{ inventory_hostname }} {{ new_instance_id }}"
+        state: present
+
+    - name: Add host key to known_hosts
+      delegate_to: localhost
+      become: false
+      known_hosts:
+        name: "{{ inventory_hostname }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -H ' ~ inventory_hostname) }}"
+    
+    #-jc open UI port
+    - name: Open UI port
+      command: >
+        {{ aws_scripts_dir }}/aws_open_port.py
+        {{ inventory_hostname }} 8088 any
+
+    #-jc open reporting port
+    - name: Open reporting port
+      command: >
+        {{ aws_scripts_dir }}/aws_open_port.py
+        {{ inventory_hostname }} 8082 any
+
+    #-jc wait for SSH
+    - name: Wait for SSH
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        timeout: 300
+
 - name: Bootstrap and deploy weather guess stack
   hosts: critchley
   become: true
@@ -6,12 +68,26 @@
   become_user: root
   vars:
     app_dir: /opt/python-weather-guess
+    model_repo_path: "{{ playbook_dir }}/../src/categorize/model/vgg19-weather.h5"
+    model_dir: /models
+    model_filename: vgg19-weather.h5
+    model_remote_path: "{{ model_dir }}/{{ model_filename }}"
 
   tasks:
     - name: Set hostname
       hostname:
         name: "{{ inventory_hostname }}"
 
+    - name: Ensure /models exists on host
+      become: true
+      file:
+        path: "{{ model_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      tags:
+        - install_model
 
     #-jc ensure apt cache fresh
     - name: Update apt cache
@@ -59,6 +135,26 @@
         version: main
         update: yes
 
+    - name: Check model file exists
+      stat:
+        path: "{{ model_repo_path }}"
+      delegate_to: localhost
+      run_once: true
+      register: model_src
+      tags:
+        - install_model
+    
+    - name: Push model to host
+      become: true
+      copy:
+        src: "{{ model_repo_path }}"
+        dest: "{{ model_remote_path }}"
+        mode: "0644"
+        force: false
+      when: model_src.stat.exists
+      tags:
+        - install_model
+
     #-jc build images on target host
     - name: Build docker images
       ansible.builtin.command:
@@ -71,3 +167,30 @@
         cmd: docker-compose up -d --remove-orphans
         chdir: /opt/python-weather-guess
     
+- name: Checks after system is provisioned
+  hosts: critchley
+  gather_facts: false
+  connection: local
+
+  tasks:
+       - name: Check reporting stats externally
+         uri:
+           url: "http://clean5:8082/stats"
+           return_content: true
+         register: stats_ext
+         retries: 60
+         delay: 2
+         until:
+           - stats_ext.status == 200
+           - '"status" in stats_ext.content'
+         tags: system_tests
+   
+       - name: Check UI externally
+         uri:
+           url: "http://clean5:8088/"
+           status_code: 200
+         register: ui_ext
+         retries: 30
+         delay: 2
+         until: ui_ext.status == 200
+         tags: system_tests

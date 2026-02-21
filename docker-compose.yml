@@ -51,6 +51,7 @@ services:
       STORAGE_DIR: /data/images
     volumes:
       - image_data:/data/images
+      - /opt/python-weather-guess/src/categorize/model:/models:ro
 
   reporting:
     image: techtest-reporting:dev
