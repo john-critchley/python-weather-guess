@@ -2,7 +2,7 @@ all:
   children:
     critchley:
       hosts:
-        clean6:
+        whatweather:
           instance_type: t3.medium
       vars:
           ansible_python_interpreter: /usr/bin/python3

@@ -175,19 +175,19 @@
   tasks:
        - name: Check reporting stats externally
          uri:
-           url: "http://clean5:8082/stats"
+           url: "http://{{inventory_hostname}}:8082/stats"
            return_content: true
          register: stats_ext
          retries: 60
          delay: 2
          until:
            - stats_ext.status == 200
-           - '"status" in stats_ext.content'
+           - "'\"status\": \"ok\"' in stats_ext.content"
          tags: system_tests
    
        - name: Check UI externally
          uri:
-           url: "http://clean5:8088/"
+           url: "http://{{inventory_hostname}}:8088/"
            status_code: 200
          register: ui_ext
          retries: 30
