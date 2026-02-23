@@ -15,6 +15,9 @@
     </marker>
   </defs>
 
+  <!-- Background -->
+  <rect width="1600" height="620" fill="#FFF8C0"/>
+
   <!-- Box widths reduced ~7%:
        220 -> 205, 260 -> 242, 200 -> 186
        Increased gap between Browser and UI nginx by shifting everything (except Browser) right. -->
