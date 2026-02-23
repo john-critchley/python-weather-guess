@@ -1,17 +1,24 @@
 # Things which are not implemented for demo
+
+## Just in
+
+The image storage seems to be /data/images according to the docker compose file
+But in the dispatcher config it is still /tmp. This needs checking next.
+Although migrating to S3 may be the better next step - see below
+
 ## These need to be done for full productionizing
 
-## Kubernetes
+### Kubernetes
 
 This will also help with ending it being AWS specific
 
-## Docker images
+### Docker images
 
 Each service in each docker image should have a health report (url /health on exposed API)
 Docker HEALTHCHECK line for each service
 Docker compose / monitoring should check these.
 
-## Image storage
+### Image storage
 
 Images are currently stored on a shared Docker volume.
 
@@ -23,16 +30,18 @@ Also:
 Retention time needs to be decided and cleanup schedule needs to be implemented; images
 should be cleaned out in convert with database records about them.
 
-## Kafka
+### Kafka
 
 Kafka clients are retried until broker is available.
 In production it would be better to wait until health checks confirm it is ready.
+I changed auto.offset.reset from latest to earliest, because we were losing kafka messages while kafka initiated; with health checks this can be changed back.
+However a review  of how kafka queues work should be done in this code to ensure that they are accessed efficiently especially when there starts to be large throughput.
 
-## Replace development web servers
+### Replace development web servers
 
 Flask servers are currently used, and need to be replaced with proper production hardened ones , I suggest Gunicorn.
 
-### TLS
+#### TLS
 
 Production setup should include:
 
@@ -40,23 +49,29 @@ Production setup should include:
 - reverse proxy (e.g. nginx, apache2 or cloud load balancer)
 - secure headers and best current cipher configuration
 
-## Performance improvement
+### DNS setup
+
+Dynamic DNS or get a static IP (Elastic IP from AWS)
+and set up suitable domain OR use existing reverse proxy for service.
+(This probably fits in with TLS in most larger organizations)
+
+### Performance improvement
 
 The database gets a hash/checksum of the image and if an image is already processed use previous answer.
 
-## Testing
+### Testing
 
 Full end to end test required - maybe using selenium.
 Load testing should also be included in this.
 
 More security testing is needed.
 
-# Model
+## Model
 
 This should be fetced from a repo; investigate if it suitable to download from huggingface
 investigate cenerally caching images also, in case it is not available on huggingface.
 
-## Monitoring
+### Monitoring
 
 Plug into Prometheus or other monitoring; reporting via Grafana or similar.
 Need to have metrics and alerting for things like:
@@ -79,10 +94,10 @@ Resource limits
 - CPU (especially for categorize)
 - Memory (categorize)
 
-## Logging
+### Logging
 
 Structured logging with externalized logs
 
-## Further planning
+### Further planning
 
 Estimate capacity and make decisions on number and sizinga for production deployment
