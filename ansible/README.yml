@@ -1,0 +1,29 @@
+# deploy an instance
+
+add the host to inventory.yml
+(I usually have been updating the one host I am testing with)
+run
+ansible-playbook -i inventory.yml site.yml --limit weather
+
+Note: --limit weather is optional if you don't mind it going through all the hosts
+and checking they are provisioned / completing any.
+
+wait about 15mins
+check the new enrty in the /etc/hosts file and set DNS for it
+
+---
+
+I have been using zoneedit, but its dynamic dns stopped working last week;
+for this kind of demo scenario I put this to run at the end of startup:
+
+#!/usr/bin/bash
+# zoneedit credentials
+user=jcritchley
+token=690E9144A3A2C48F
+host=$(uname -n).critchley.biz # or whatever
+[ "$1" == start ] &&
+curl -v "https://$user:$token@dynamic.zoneedit.com/auth/dynamic.html?host=$host" >> /var/log/setdns.log 2>&1
+
+I use CNAMES for any application names which are aliases the host name.
+eg
+weatherphoto.cx CNAME weather.critchley.biz
