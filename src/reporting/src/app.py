@@ -32,10 +32,17 @@ def get_request_stats():
 
         with conn:
             with conn.cursor() as cur:
-                cur.execute(f"SELECT COUNT(*) FROM {DB_REQ_TABLE}")
+                # count of requests
+                q = psycopg2.sql.SQL("SELECT COUNT(*) FROM {}").format(
+                    psycopg2.sql.Identifier(DB_REQ_TABLE)
+                )
+                cur.execute(q)
                 req_count = cur.fetchone()[0]
-
-                cur.execute(f"SELECT COUNT(*) FROM {DB_RESP_TABLE}")
+                # count of responses
+                q = psycopg2.sql.SQL("SELECT COUNT(*) FROM {}").format(
+                    psycopg2.sql.Identifier(DB_RESP_TABLE)
+                )
+                cur.execute(q)
                 resp_count = cur.fetchone()[0]
 
         return {
