@@ -1,11 +1,5 @@
 # Things which are not implemented for demo
 
-## Just in
-
-The image storage seems to be /data/images according to the docker compose file
-But in the dispatcher config it is still /tmp. This needs checking next.
-Although migrating to S3 may be the better next step - see below
-
 ## These need to be done for full productionizing
 
 ### Kubernetes
