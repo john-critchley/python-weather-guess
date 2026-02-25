@@ -92,6 +92,7 @@
 
     #-jc upload hosts fragment
     - name: Upload hosts fragment
+      delegate_to: localhost
       command: >
         curl -f
         -u {{ webdav_user }}:{{ webdav_password }}
@@ -100,6 +101,7 @@
 
     #-jc upload known_hosts fragment
     - name: Upload known_hosts fragment
+      delegate_to: localhost
       command: >
         curl -f
         -u {{ webdav_user }}:{{ webdav_password }}
