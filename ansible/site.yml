@@ -84,11 +84,11 @@
         dest: "/tmp/{{ inventory_hostname }}-latest.hosts"
         content: "{{ new_public_ip }} {{ inventory_hostname }}.critchley.biz {{ inventory_hostname }} {{ new_instance_id }}\n"
 
-    #-jc build known_hosts fragment
-    - name: Build known_hosts fragment
-      copy:
-        dest: "/tmp/{{ inventory_hostname }}-latest.known_hosts\n"
-        content: "{{ ssh_scan.stdout }}"
+#    #-jc build known_hosts fragment
+#    - name: Build known_hosts fragment
+#      copy:
+#        dest: "/tmp/{{ inventory_hostname }}-latest.known_hosts\n"
+#        content: "{{ ssh_scan.stdout }}"
 
     #-jc upload hosts fragment
     - name: Upload hosts fragment
@@ -99,14 +99,14 @@
         -T /tmp/{{ inventory_hostname }}-latest.hosts
         {{ webdav_url }}/{{ inventory_hostname }}-latest.hosts
 
-    #-jc upload known_hosts fragment
-    - name: Upload known_hosts fragment
-      delegate_to: localhost
-      command: >
-        curl -f
-        -u {{ webdav_user }}:{{ webdav_password }}
-        -T /tmp/{{ inventory_hostname }}-latest.known_hosts
-        {{ webdav_url }}/{{ inventory_hostname }}-latest.known_hosts
+#    #-jc upload known_hosts fragment
+#    - name: Upload known_hosts fragment
+#      delegate_to: localhost
+#      command: >
+#        curl -f
+#        -u {{ webdav_user }}:{{ webdav_password }}
+#        -T /tmp/{{ inventory_hostname }}-latest.known_hosts
+#        {{ webdav_url }}/{{ inventory_hostname }}-latest.known_hosts
 
     #-jc register dynamic host
     - name: Register host for next plays
