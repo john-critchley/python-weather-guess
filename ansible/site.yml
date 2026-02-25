@@ -58,12 +58,12 @@
     - name: Open UI port
       command: >
         {{ aws_scripts_dir }}/aws_open_port.py
-        {{ inventory_hostname }} 8088 any
+        {{ new_instance_id }} 8088 any
 
     - name: Open reporting port
       command: >
         {{ aws_scripts_dir }}/aws_open_port.py
-        {{ inventory_hostname }} 8082 any
+        {{ new_instance_id }} 8082 any
 
     #-jc wait for ssh
     - name: Wait for SSH

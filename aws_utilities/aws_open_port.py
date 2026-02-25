@@ -54,27 +54,15 @@ def main():
 
     if len(args) != 3:
         print("Usage:")
-        print("  aws_open_port.py <instance|hostname> <port> <ip-or-host> [--flush]")
+        print("  aws_open_port.py <instance> <port> <ip-or-host> [--flush]")
         sys.exit(1)
 
-    target_host, port_str, allowed = args
+    instance_id, port_str, allowed = args
     port = int(port_str)
 
     #-jc reuse your existing credential model
     ec2 = boto3.client("ec2")
 
-    #-jc resolve instance id via your hosts file logic expectation
-    try:
-        import subprocess
-
-        inst = subprocess.check_output(
-            ["getent", "hosts", target_host],
-            text=True,
-        )
-        instance_id = inst.strip().split()[-1]
-    except Exception:
-        print(f"Could not resolve instance id for {target_host}")
-        sys.exit(1)
 
     cidr = resolve_to_cidr(allowed)
 
