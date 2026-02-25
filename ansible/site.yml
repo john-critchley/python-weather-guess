@@ -5,7 +5,7 @@
   connection: local
 
   vars:
-    aws_scripts_dir: "/home/john/aws"
+    aws_scripts_dir: "{{ lookup('env','HOME') }}/aws"
     webdav_url: "{{ lookup('env','WEBDAV_URL') }}"
     webdav_user: "{{ lookup('env','WEBDAV_USER') }}"
     webdav_password: "{{ lookup('env','WEBDAV_PASSWORD') }}"
