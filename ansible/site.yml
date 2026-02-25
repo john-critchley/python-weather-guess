@@ -82,12 +82,12 @@
     - name: Build hosts fragment
       copy:
         dest: "/tmp/{{ inventory_hostname }}-latest.hosts"
-        content: "{{ new_public_ip }} {{ inventory_hostname }}.critchley.biz {{ inventory_hostname }}"
+        content: "{{ new_public_ip }} {{ inventory_hostname }}.critchley.biz {{ inventory_hostname }} {{ new_instance_id }}\n"
 
     #-jc build known_hosts fragment
     - name: Build known_hosts fragment
       copy:
-        dest: "/tmp/{{ inventory_hostname }}-latest.known_hosts"
+        dest: "/tmp/{{ inventory_hostname }}-latest.known_hosts\n"
         content: "{{ ssh_scan.stdout }}"
 
     #-jc upload hosts fragment
