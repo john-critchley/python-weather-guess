@@ -27,21 +27,11 @@
         state: directory
         mode: "0700"
 
-    #-jc fetch ec2 private key from ssm (retry for eventual consistency)
-    - name: Fetch EC2 private key from SSM
-      amazon.aws.aws_ssm:
-        name: "/critchley/aws/ec2-keypairs/{{ inventory_hostname }}"
-        with_decryption: true
-      register: ec2_key
-      retries: 5
-      delay: 3
-      until: ec2_key is succeeded
-
     #-jc install ec2 private key locally
     - name: Install EC2 private key
       copy:
         dest: "{{ lookup('env','HOME') }}/.ssh/{{ inventory_hostname }}.pem"
-        content: "{{ ec2_key.parameter.value }}"
+        content: "{{ lookup('amazon.aws.aws_ssm', '/critchley/aws/ec2-keypairs/' ~ inventory_hostname, decrypt=True) }}"
         mode: "0600"
       no_log: true
 
