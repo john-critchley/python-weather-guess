@@ -1,0 +1,61 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECTHOST: ${{ github.ref_name }}
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+    steps:
+      #-jc checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #-jc system deps
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
+
+      #-jc python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      #-jc python deps
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible boto3 botocore
+
+      #-jc ansible aws collection
+      - name: Install Ansible AWS collection
+        run: ansible-galaxy collection install amazon.aws
+
+      #-jc aws creds
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      #-jc run playbook
+      - name: Run Ansible playbook
+        env:
+          WEBDAV_URL: ${{ secrets.WEBDAV_URL }}
+          WEBDAV_USER: ${{ secrets.WEBDAV_USER }}
+          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_PASSWORD }}
+        run: |
+          ansible-playbook \
+            -i ansible/inventory.yml \
+            ansible/site.yml \
+            --limit "$PROJECTHOST"

@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import boto3
+import botocore.exceptions
 
 # DEFAULT_AMI = "ami-0b83ef932dab936e6"  # my baseline — change if needed
 DEFAULT_AMI = "ami-095f312bef9bfe5b1"  # clean-room test
@@ -36,6 +37,51 @@ def find_instance_by_name(ec2, name):
             return i
     return None
 
+import botocore.exceptions
+
+def ensure_keypair_in_ssm(ec2, ssm, env_name):
+    """
+    Ensure an EC2 keypair called env_name exists.
+    If we have to create it, store the private key material in SSM SecureString.
+
+    Returns the KeyName to use for RunInstances.
+    """
+    key_name = env_name
+    param_name = f"/critchley/aws/ec2-keypairs/{env_name}"
+
+    # Does the keypair already exist?
+    try:
+        ec2.describe_key_pairs(KeyNames=[key_name])
+        return key_name
+    except botocore.exceptions.ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        if code not in ("InvalidKeyPair.NotFound", "InvalidKeyPair.NotFoundException"):
+            raise
+
+    # Create keypair (returns private material once)
+    kp = ec2.create_key_pair(KeyName=key_name)
+    key_material = kp["KeyMaterial"]
+
+    # Store private key in SSM SecureString (only if not already present)
+    try:
+        ssm.put_parameter(
+            Name=param_name,
+            Type="SecureString",
+            Value=key_material,
+            Overwrite=False,
+            Tier="Standard",
+        )
+    except botocore.exceptions.ClientError as e:
+        # If someone created the parameter already, don't overwrite silently
+        code = e.response.get("Error", {}).get("Code", "")
+        if code == "ParameterAlreadyExists":
+            raise RuntimeError(
+                f"SSM parameter already exists for {env_name} ({param_name}) "
+                "but we just created a new keypair. Refusing to continue."
+            ) from e
+        raise
+
+    return key_name
 
 #-jc ensure keypair consistency (idempotent and safe)
 def ensure_keypair(ec2, key_name: str, pem_path: Path) -> Path:
@@ -88,12 +134,10 @@ def main():
         ec2 = session.client("ec2", region_name=DEFAULT_REGION)
     else:
         ec2 = boto3.client("ec2", region_name=DEFAULT_REGION)
+    ssm = session.client("ssm", region_name=DEFAULT_REGION) if profile else boto3.client("ssm", region_name=DEFAULT_REGION)
 
-    key_name = f"{name}{DEFAULT_KEY_SUFFIX}"
-    pem_path = Path.home() / ".ssh" / f"{key_name}.pem"
-
-    #-jc ensure key state is sane before anything else
-    ensure_keypair(ec2, key_name, pem_path)
+    #-jc ensure per-environment keypair exists (SSM-backed)
+    key_name = ensure_keypair_in_ssm(ec2, ssm, name)
 
     #-jc check for existing instance
     existing = find_instance_by_name(ec2, name)

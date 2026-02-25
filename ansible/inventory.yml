@@ -2,10 +2,12 @@ all:
   children:
     critchley:
       hosts:
-        whatweather:
+        control:
+          instance_type: t3.medium
+        wednesday:
           instance_type: t3.medium
       vars:
           ansible_python_interpreter: /usr/bin/python3
           ansible_user: admin
-          ansible_ssh_private_key_file: "/home/john/.ssh/{{inventory_hostname}}.pem"
+          ansible_ssh_private_key_file: "{{ lookup('env','HOME') }}/.ssh/{{ inventory_hostname }}.pem"
           ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
