@@ -38,7 +38,9 @@ jobs:
 
       #-jc ansible aws collection
       - name: Install Ansible AWS collection
-        run: ansible-galaxy collection install amazon.aws
+	run: |
+	  ansible-galaxy collection install amazon.aws \
+	    -p ~/.ansible/collections --force
 
       #-jc aws creds
       - name: Configure AWS credentials
