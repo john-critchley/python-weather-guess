@@ -8,6 +8,8 @@ all:
           instance_type: t3.medium
         thursday:
           instance_type: t3.small
+        thursday1:
+          instance_type: t3.small
       vars:
           ansible_python_interpreter: /usr/bin/python3
           ansible_user: admin
